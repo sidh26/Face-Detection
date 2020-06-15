@@ -1,2 +1,5 @@
 # Face-Detection
-Face Detection using MT-CNN
+Three approaches to Face Detection:
+* MTCNN
+* MobileNetSSD
+* ResNetSSD
