@@ -28,9 +28,6 @@ def add_overlays(frame, faces):
 
 print('Creating networks and loading parameters')
 
-minsize = 20  # minimum size of face
-threshold = [0.6, 0.7, 0.7]  # three steps's threshold
-factor = 0.709  # scale factor
 frame_interval = 3
 
 # video_capture = cv2.VideoCapture(0)
@@ -39,8 +36,8 @@ c = 0
 print('Start Recognition!')
 prevTime = 0
 counter = 0
-face_detection = mobilenet_detection.MobileNetDetection()
-img_list = glob('D:\Documents\GitHub\Face-Detection\images\e*.jpg')
+face_detection = mobilenet_detection.MobileNetDetection(face_crop_margin=16)
+img_list = glob('D:\Documents\GitHub\Face-Detection\images\e*.jp*g')
 for img in img_list:
     frame = cv2.imread(img)
     # while True:

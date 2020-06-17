@@ -23,7 +23,7 @@ with tf.Graph().as_default():
         threshold = [0.6, 0.7, 0.7]  # three steps's threshold
         factor = 0.709  # scale factor
         frame_interval = 3
-        img_list = glob('D:\Documents\GitHub\Face-Detection\images\e*.jpg')
+        img_list = glob('D:\Documents\GitHub\Face-Detection\images\e*.jp*g')
         
         # video_capture = cv2.VideoCapture(0)
         c = 0
