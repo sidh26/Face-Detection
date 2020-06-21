@@ -2,9 +2,11 @@
 
 import os
 from glob import glob
+from time import time
 
 import cv2
 import numpy as np
+import pandas as pd
 
 # construct the argument parse and parse the arguments
 
@@ -13,7 +15,9 @@ print("[INFO] loading model...")
 
 net = cv2.dnn.readNetFromCaffe(r'ResNetSSD\deploy.txt', r'ResNetSSD\model.caffemodel')
 print("[INFO] Model LOADED")
-img_list = glob('D:\Documents\GitHub\Face-Detection\images\e*.jpg')
+img_list = glob('D:\Documents\GitHub\Face-Detection\images\class\*.jpg')
+rows = []
+total_time = 0
 for img in img_list:
     
     # load the input image and construct an input blob for the image
@@ -34,19 +38,21 @@ for img in img_list:
     # predictions
     
     print("[INFO] computing face detections...")
-    
+    start_time = time()
     net.setInput(blob)
     detections = net.forward()
+    end_time = time()
+    total_time += end_time - start_time
+    bounding_box = detections[0, 0, 0, 3:7] * np.array([w, h, w, h])
+    rows.append([os.path.basename(img), *bounding_box])
     
     # loop over the detections
     for i in range(0, detections.shape[2]):
         
-        # extract the confidence (i.e., probability) associated with the
-        # prediction
+        # extract the confidence (i.e., probability) associated with the prediction
         
         confidence = detections[0, 0, i, 2]
-        # filter out weak detections by ensuring the `confidence` is
-        # greater than the minimum confidence
+        # filter out weak detections by ensuring the `confidence` is greater than the minimum confidence
         
         if confidence > 0.25:
             # compute the (x, y)-coordinates of the bounding box for the
@@ -64,7 +70,10 @@ for img in img_list:
             # cv2.putText(image, text, (startX, y), cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 2)
         # show the output image
     cv2.imwrite('Detected/ResNetSSD/' + os.path.splitext(os.path.basename(img))[0] + '.png', image)
-    cv2.imshow("Output", image)
-    if cv2.waitKey(0) & 0xFF == ord('q'):
-        continue
+    # image = cv2.resize(image, (0, 0), fx=0.2, fy=0.2, interpolation=cv2.INTER_AREA)
+    # cv2.imshow("Output", image)
+    # if cv2.waitKey(0) & 0xFF == ord('q'):
+    #     continue
+df = pd.DataFrame(rows, columns=['Image Name', 'C1', 'C2', 'C3', 'C4'])
+df.to_csv('resnet_detection.csv')
 cv2.destroyAllWindows()

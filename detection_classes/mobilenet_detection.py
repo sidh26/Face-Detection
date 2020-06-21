@@ -15,6 +15,7 @@ class Face:
         self.image = None
         self.container_image = None
         self.embedding = None
+        self.score = None
 
 
 class MobileNetDetection:
@@ -61,7 +62,7 @@ class MobileNetDetection:
         faces = []
         boxes = np.squeeze(boxes)
         scores = np.squeeze(scores)
-        
+        # i = np.argmax(scores)
         for i in range(boxes.shape[0]):
             if scores[i] > 0.7:
                 face = Face()
@@ -76,6 +77,7 @@ class MobileNetDetection:
                 face.bounding_box[1] = np.maximum(top - self.face_crop_margin / 2, 0)
                 face.bounding_box[2] = np.minimum(right + self.face_crop_margin / 2, img_size[1])
                 face.bounding_box[3] = np.minimum(bottom + self.face_crop_margin / 2, img_size[0])
+                face.score = scores[i]
                 cropped = image[face.bounding_box[1]:face.bounding_box[3], face.bounding_box[0]:face.bounding_box[2], :]
                 face.image = misc.imresize(cropped, (self.face_crop_size, self.face_crop_size), interp='bilinear')
                 faces.append(face)
