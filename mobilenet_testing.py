@@ -23,15 +23,18 @@ def add_overlays(frame, faces):
                 max_score_ind = i
         face = faces[max_score_ind]
         face_bb = face.bounding_box.astype(int)
-        cv2.rectangle(frame, (face_bb[0], face_bb[1]), (face_bb[2], face_bb[3]), (0, 0, 255), 2)
+        # cv2.rectangle(frame, (face_bb[0], face_bb[1]), (face_bb[2], face_bb[3]), (0, 0, 255), 2)
         bounding_box = face_bb[0], face_bb[1], face_bb[2], face_bb[3]
     return bounding_box
 
 
-print('Start Recognition!')
-rows = []
+print('Start Detection!')
 face_detection = mobilenet_detection.MobileNetDetection(face_crop_margin=16)
-img_list = glob('D:\Documents\GitHub\Face-Detection\images\class\*.jpg')
+
+img_list = glob('D:\Documents\GitHub\Face-Detection\images\cctv\*.jp*g')
+img_list.extend(img_list)
+
+rows = []
 total_time = 0
 for img in img_list:
     frame = cv2.imread(img)
@@ -42,14 +45,21 @@ for img in img_list:
     faces = face_detection.find_faces(frame)
     end_time = time()
     total_time += end_time - start_time
-    bounding_box = add_overlays(frame, faces)
+    if faces:
+        bounding_box = add_overlays(frame, faces)
+        temp = frame[bounding_box[1]: bounding_box[3], bounding_box[0]:bounding_box[2], :]
+        cv2.imwrite('Detected/MobileNetSSD/cropped51/' + os.path.splitext(os.path.basename(img))[0] + '.png', temp)
+    else:
+        bounding_box = (0, 0, 0, 0)
     rows.append([os.path.basename(img), *bounding_box])
+
     cv2.imwrite('Detected/MobileNetSSD/' + os.path.splitext(os.path.basename(img))[0] + '.png', frame)
-    # frame = cv2.resize(frame, (0, 0), fx=0.2, fy=0.2, interpolation=cv2.INTER_AREA)
-    # cv2.imshow('Video', frame)
-    #
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     continue
+    frame = cv2.resize(frame, (0, 0), fx=0.2, fy=0.2, interpolation=cv2.INTER_AREA)
+    cv2.imshow('Video', frame)
+    if cv2.waitKey(1) & 0xFF == ord('q'):
+        continue
+
+total_time / len(img_list)
 df = pd.DataFrame(rows, columns=['Image Name', 'C1', 'C2', 'C3', 'C4'])
-df.to_csv('mobilenet_detection.csv')
+df.to_csv('mobilenet_detection_51.csv')
 cv2.destroyAllWindows()
